@@ -1,6 +1,6 @@
 //import material
 import 'package:flutter/material.dart';
-import 'package:sentinex/custom_widgets/my_colors.dart';
+import 'package:sentinex/utils/my_colors.dart';
 
 class Dashboard extends StatefulWidget {
   Dashboard({Key? key}) : super(key: key);

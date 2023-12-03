@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:sentinex/custom_widgets/my_colors.dart';
+import 'package:sentinex/resources/auth_methods.dart';
+import 'package:sentinex/utils/my_colors.dart';
 import 'package:sentinex/pages/dashboard.dart';
 
 class LogIn extends StatefulWidget {
-  LogIn({Key? key}) : super(key: key);
+  const LogIn({Key? key}) : super(key: key);
 
   @override
   State<LogIn> createState() => _LogInState();
@@ -13,6 +14,9 @@ class _LogInState extends State<LogIn> {
   MyColors my_colors = MyColors();
 
   bool _obscureText = true;
+
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   void _togglePasswordVisibility() {
     setState(() {
@@ -26,7 +30,7 @@ class _LogInState extends State<LogIn> {
       body: Center(
         child: Card(
           color: my_colors.primaryColor,
-          margin: EdgeInsets.all(30),
+          margin: const EdgeInsets.all(30),
           elevation: 10,
           child: Padding(
             padding: const EdgeInsets.all(58.0),
@@ -48,7 +52,7 @@ class _LogInState extends State<LogIn> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Image(
+                  const Image(
                     image: AssetImage("assets/images/sentinex_logo.png"),
                     width: 200,
                     height: 200,
@@ -56,7 +60,8 @@ class _LogInState extends State<LogIn> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
-                      style: TextStyle(
+                      controller: _emailController,
+                      style: const TextStyle(
                         color: Colors.white,
                       ),
                       decoration: InputDecoration(
@@ -83,6 +88,7 @@ class _LogInState extends State<LogIn> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
+                      controller: _passwordController,
                       style: TextStyle(
                         color: my_colors.secondaryColor,
                       ),
@@ -97,7 +103,7 @@ class _LogInState extends State<LogIn> {
                           ),
                           onPressed: _togglePasswordVisibility,
                         ),
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             width: 2,
@@ -115,7 +121,7 @@ class _LogInState extends State<LogIn> {
                     ),
                   ),
                   Container(
-                    margin: EdgeInsets.only(top: 20),
+                    margin: const EdgeInsets.only(top: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -126,13 +132,22 @@ class _LogInState extends State<LogIn> {
                               borderRadius: BorderRadius.circular(0),
                             ),
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Dashboard()),
+                          onPressed: () async {
+                            String res = await MAuthMethods().singUpUser(
+                              email: _emailController.text,
+                              password: _passwordController.text,
                             );
+                            print(res);
                           },
+
+                          // {
+
+                          //   Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(
+                          //         builder: (context) => Dashboard()),
+                          //   );
+                          // },
                           child: Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Text(
