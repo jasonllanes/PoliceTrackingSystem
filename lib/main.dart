@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sentinex/pages/dashboard.dart';
 import 'package:sentinex/pages/log_in.dart';
+import 'package:sentinex/providers/user_provider.dart';
 import 'package:sentinex/responsive/responsive_screen_layout.dart';
 import 'package:sentinex/responsive/web_screen_layout.dart';
 import 'package:sentinex/utils/my_colors.dart';
@@ -26,36 +28,43 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'SentiNex',
-      theme: ThemeData.dark(useMaterial3: false).copyWith(
-        primaryColor: MyColors().secondaryColor,
-        scaffoldBackgroundColor: MyColors().primaryColor,
-      ),
-      home: StreamBuilder(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.active) {
-            if (snapshot.hasData) {
-              return Dashboard();
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => UserProvider(),
+        ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'SentiNex',
+        theme: ThemeData.dark(useMaterial3: false).copyWith(
+          primaryColor: MyColors().secondaryColor,
+          scaffoldBackgroundColor: MyColors().primaryColor,
+        ),
+        home: StreamBuilder(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.active) {
+              if (snapshot.hasData) {
+                return Dashboard();
+              }
+            } else if (snapshot.hasError) {
+              return const Center(
+                child: Text("Something went wrong!"),
+              );
             }
-          } else if (snapshot.hasError) {
-            return const Center(
-              child: Text("Something went wrong!"),
-            );
-          }
 
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: MyColors().primaryColor,
-              ),
-            );
-          }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(
+                  color: MyColors().primaryColor,
+                ),
+              );
+            }
 
-          return const LogIn();
-        },
+            return const LogIn();
+          },
+        ),
       ),
     );
   }

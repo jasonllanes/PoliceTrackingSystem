@@ -2,10 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:sentinex/models/user.dart' as user;
 
 class MAuthMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<user.User> getUserDetails() async {
+    User currentUser = _auth.currentUser!;
+
+    DocumentSnapshot snap =
+        await _firestore.collection("users").doc(currentUser.uid).get();
+
+    return user.User(
+      email: (snap.data() as Map<String, dynamic>)['email'],
+      uid: currentUser.uid,
+      password: (snap.data() as Map<String, dynamic>)['password'],
+    );
+  }
 
   Future<String> singUpUser({
     required String email,
@@ -22,11 +36,16 @@ class MAuthMethods {
 
         print(userCredential.user!.uid);
 
-        await _firestore.collection("users").doc(userCredential.user!.uid).set({
-          "uid": userCredential.user!.uid,
-          "email": email,
-          "password": password,
-        });
+        user.User _user = user.User(
+          uid: userCredential.user!.uid,
+          email: email,
+          name: "",
+        );
+
+        await _firestore
+            .collection("users")
+            .doc(userCredential.user!.uid)
+            .set(_user.toJson());
 
         res = "Success";
       }

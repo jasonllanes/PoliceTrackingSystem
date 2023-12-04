@@ -1,3 +1,7 @@
+import 'dart:html';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sentinex/resources/auth_methods.dart';
 import 'package:sentinex/utils/my_colors.dart';
@@ -16,6 +20,25 @@ class _DashboardState extends State<Dashboard> {
   MyColors my_colors = MyColors();
   bool _isLoading = false;
 
+  String email = "";
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentEmail();
+  }
+
+  void getCurrentEmail() async {
+    DocumentSnapshot snap = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    setState(() {
+      email = (snap.data() as Map<String, dynamic>)['email'];
+    });
+  }
+
   void signOut() async {
     setState(() => _isLoading = true);
     String res = await MAuthMethods().signOut();
@@ -23,7 +46,7 @@ class _DashboardState extends State<Dashboard> {
     if (res.contains("Success")) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => LogIn()),
+        MaterialPageRoute(builder: (context) => const LogIn()),
       );
     } else {
       showSnackBar(context, res);
@@ -36,7 +59,7 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text("Dashboard"),
+        title: Text("Dashboard $email"),
       ),
       body: Row(
         children: [
