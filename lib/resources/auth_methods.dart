@@ -14,8 +14,8 @@ class MAuthMethods {
     String res = "Something went wrong!";
 
     try {
-      if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email)) {
-        return "Please enter a valid email address.";
+      if (email.isEmpty || password.isEmpty) {
+        res = "Please fill up the fields";
       } else {
         UserCredential userCredential = await _auth
             .createUserWithEmailAndPassword(email: email, password: password);
@@ -30,30 +30,42 @@ class MAuthMethods {
 
         res = "Success";
       }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        res = "The password provided is too weak.";
-      } else if (e.code == 'email-already-in-use') {
-        res = "The account already exists for that email.";
-      }
     } catch (e) {
-      res = "Error";
+      res = e.toString();
     }
     return res;
   }
 
   // Sign in with email and password
-  Future signInWithEmailAndPassword(String email, String password) async {
+  Future<String> signInWithEmailAndPassword(
+      String email, String password) async {
+    String res = 'Something went wrong!';
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
-      return userCredential;
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        return "No user found for that email.";
-      } else if (e.code == 'wrong-password') {
-        return "Wrong password provided for that user.";
+      if (email.isEmpty || password.isEmpty) {
+        res = "Please fill up the fields";
+      } else {
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+            email: email, password: password);
+
+        res = "Success";
       }
+    } catch (e) {
+      res = e.toString();
     }
+    return res;
+  }
+
+  // Sign out
+  Future<String> signOut() async {
+    String res = "Something went wrong!";
+    try {
+      await _auth.signOut();
+
+      res = "Success";
+    } catch (e) {
+      print(e.toString());
+    }
+
+    return res;
   }
 }

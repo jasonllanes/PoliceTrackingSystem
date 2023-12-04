@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sentinex/resources/auth_methods.dart';
 import 'package:sentinex/utils/my_colors.dart';
 import 'package:sentinex/pages/dashboard.dart';
+import 'package:sentinex/utils/utils.dart';
 
 class LogIn extends StatefulWidget {
   const LogIn({Key? key}) : super(key: key);
@@ -17,11 +18,58 @@ class _LogInState extends State<LogIn> {
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   void _togglePasswordVisibility() {
     setState(() {
       _obscureText = !_obscureText;
     });
+  }
+
+  void signUp() async {
+    setState(() {
+      _isLoading = true;
+    });
+    String res = await MAuthMethods().singUpUser(
+      email: _emailController.text,
+      password: _passwordController.text,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (res == "Success") {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Dashboard()),
+      );
+    } else {
+      showSnackBar(context, res);
+    }
+  }
+
+  void logInUser() async {
+    String res = await MAuthMethods().signInWithEmailAndPassword(
+      _emailController.text,
+      _passwordController.text,
+    );
+
+    if (res.contains("Success")) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Dashboard()),
+      );
+    } else {
+      showSnackBar(context, res);
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
   }
 
   @override
@@ -132,13 +180,7 @@ class _LogInState extends State<LogIn> {
                               borderRadius: BorderRadius.circular(0),
                             ),
                           ),
-                          onPressed: () async {
-                            String res = await MAuthMethods().singUpUser(
-                              email: _emailController.text,
-                              password: _passwordController.text,
-                            );
-                            print(res);
-                          },
+                          onPressed: logInUser,
 
                           // {
 
@@ -150,14 +192,20 @@ class _LogInState extends State<LogIn> {
                           // },
                           child: Padding(
                             padding: const EdgeInsets.all(10.0),
-                            child: Text(
-                              'Log In',
-                              style: TextStyle(
-                                color: my_colors.primaryColor,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            child: _isLoading
+                                ? Center(
+                                    child: CircularProgressIndicator(
+                                      color: my_colors.primaryColor,
+                                    ),
+                                  )
+                                : Text(
+                                    'Log In',
+                                    style: TextStyle(
+                                      color: my_colors.primaryColor,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],

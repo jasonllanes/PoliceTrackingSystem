@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:sentinex/pages/dashboard.dart';
 import 'package:sentinex/pages/log_in.dart';
 import 'package:sentinex/responsive/responsive_screen_layout.dart';
 import 'package:sentinex/responsive/web_screen_layout.dart';
@@ -31,8 +33,29 @@ class MyApp extends StatelessWidget {
         primaryColor: MyColors().secondaryColor,
         scaffoldBackgroundColor: MyColors().primaryColor,
       ),
-      home: const ResponsiveLayout(
-        webScreenLayout: WebScreenLayout(),
+      home: StreamBuilder(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.active) {
+            if (snapshot.hasData) {
+              return Dashboard();
+            }
+          } else if (snapshot.hasError) {
+            return const Center(
+              child: Text("Something went wrong!"),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: MyColors().primaryColor,
+              ),
+            );
+          }
+
+          return const LogIn();
+        },
       ),
     );
   }

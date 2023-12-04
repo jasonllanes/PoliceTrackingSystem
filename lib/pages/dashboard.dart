@@ -1,6 +1,9 @@
-//import material
 import 'package:flutter/material.dart';
+import 'package:sentinex/resources/auth_methods.dart';
 import 'package:sentinex/utils/my_colors.dart';
+import 'package:sentinex/utils/utils.dart';
+
+import 'log_in.dart';
 
 class Dashboard extends StatefulWidget {
   Dashboard({Key? key}) : super(key: key);
@@ -10,9 +13,26 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  MyColors my_colors = MyColors();
+  bool _isLoading = false;
+
+  void signOut() async {
+    setState(() => _isLoading = true);
+    String res = await MAuthMethods().signOut();
+
+    if (res.contains("Success")) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LogIn()),
+      );
+    } else {
+      showSnackBar(context, res);
+    }
+    setState(() => _isLoading = false);
+  }
+
   @override
   Widget build(BuildContext context) {
-    MyColors my_colors = MyColors();
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -74,12 +94,12 @@ class _DashboardState extends State<Dashboard> {
                           borderRadius: BorderRadius.circular(0),
                         ),
                       ),
-                      onPressed: () {
-                        print('Exit clicked');
-                      },
+                      onPressed: signOut,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text('Exit'),
+                        child: _isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : const Text('Exit'),
                       ),
                     ),
                   ],
