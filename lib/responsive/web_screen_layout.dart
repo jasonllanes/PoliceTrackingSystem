@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:sentinex/pages/log_in.dart';
-import 'package:sentinex/responsive/responsive_screen_layout.dart';
+import 'package:provider/provider.dart';
+import 'package:sentinex/pages/web_dashboard.dart';
+import 'package:sentinex/providers/user_provider.dart';
+import 'package:sentinex/models/user.dart' as model;
 
-class WebScreenLayout extends StatelessWidget {
+class WebScreenLayout extends StatefulWidget {
   const WebScreenLayout({Key? key}) : super(key: key);
 
   @override
+  State<WebScreenLayout> createState() => _WebScreenLayoutState();
+}
+
+class _WebScreenLayoutState extends State<WebScreenLayout> {
+  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: ResponsiveLayout(
-        webScreenLayout: LogIn(),
-      ),
+    return Scaffold(
+      body: WebDashboard(),
     );
   }
 }

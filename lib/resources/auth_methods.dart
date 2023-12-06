@@ -2,23 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:sentinex/models/user.dart' as user;
+import 'package:sentinex/models/user.dart' as model;
+import '../models/patrol_account_details.dart' as patrol_model;
 
 class MAuthMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<user.User> getUserDetails() async {
+  Future<model.User> getUserDetails() async {
     User currentUser = _auth.currentUser!;
 
     DocumentSnapshot snap =
         await _firestore.collection("users").doc(currentUser.uid).get();
 
-    return user.User(
-      email: (snap.data() as Map<String, dynamic>)['email'],
-      uid: currentUser.uid,
-      password: (snap.data() as Map<String, dynamic>)['password'],
-    );
+    return model.User.fromSnap(snap);
   }
 
   Future<String> singUpUser({
@@ -36,10 +33,10 @@ class MAuthMethods {
 
         print(userCredential.user!.uid);
 
-        user.User _user = user.User(
+        model.User _user = model.User(
           uid: userCredential.user!.uid,
           email: email,
-          name: "",
+          password: "",
         );
 
         await _firestore
@@ -65,6 +62,48 @@ class MAuthMethods {
       } else {
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
             email: email, password: password);
+
+        res = "Success";
+      }
+    } catch (e) {
+      res = e.toString();
+    }
+    return res;
+  }
+
+  //Add Account
+  Future<String> addPatrolAccount({
+    required String name,
+    required String badge_number,
+    required String deployment,
+    required String image_evidence,
+    required GeoPoint location,
+    required String station,
+    required String status,
+    required Timestamp timestamp,
+  }) async {
+    String res = "Something went wrong!";
+
+    try {
+      if (name.isEmpty || badge_number.isEmpty) {
+        res = "Please fill up the fields";
+      } else {
+        patrol_model.PatrolAccountDetails _patrols =
+            patrol_model.PatrolAccountDetails(
+          name: name,
+          badge_number: badge_number,
+          deployment: deployment,
+          image_evidence: image_evidence,
+          location: location,
+          station: station,
+          status: status,
+          timestamp: timestamp,
+        );
+
+        await _firestore
+            .collection("Users")
+            .doc(badge_number)
+            .set(_patrols.toJson());
 
         res = "Success";
       }

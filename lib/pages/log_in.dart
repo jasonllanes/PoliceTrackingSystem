@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:sentinex/resources/auth_methods.dart';
+import 'package:sentinex/responsive/responsive_screen_layout.dart';
+import 'package:sentinex/responsive/web_screen_layout.dart';
+import 'package:sentinex/responsive/mobile_screen_layout.dart';
 import 'package:sentinex/utils/my_colors.dart';
-import 'package:sentinex/pages/dashboard.dart';
+import 'package:sentinex/pages/web_dashboard.dart';
 import 'package:sentinex/utils/utils.dart';
 
 class LogIn extends StatefulWidget {
@@ -26,29 +29,6 @@ class _LogInState extends State<LogIn> {
     });
   }
 
-  void signUp() async {
-    setState(() {
-      _isLoading = true;
-    });
-    String res = await MAuthMethods().singUpUser(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (res == "Success") {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => Dashboard()),
-      );
-    } else {
-      showSnackBar(context, res);
-    }
-  }
-
   void logInUser() async {
     String res = await MAuthMethods().signInWithEmailAndPassword(
       _emailController.text,
@@ -58,7 +38,11 @@ class _LogInState extends State<LogIn> {
     if (res.contains("Success")) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => Dashboard()),
+        MaterialPageRoute(
+            builder: (context) => const ResponsiveLayout(
+                  webScreenLayout: WebScreenLayout(),
+                  mobileScreenLayout: MobileScreenLayout(),
+                )),
       );
     } else {
       showSnackBar(context, res);
@@ -181,15 +165,6 @@ class _LogInState extends State<LogIn> {
                             ),
                           ),
                           onPressed: logInUser,
-
-                          // {
-
-                          //   Navigator.push(
-                          //     context,
-                          //     MaterialPageRoute(
-                          //         builder: (context) => Dashboard()),
-                          //   );
-                          // },
                           child: Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: _isLoading

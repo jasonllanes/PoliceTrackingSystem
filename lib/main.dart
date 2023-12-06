@@ -2,22 +2,25 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sentinex/pages/dashboard.dart';
+import 'package:sentinex/pages/web_dashboard.dart';
 import 'package:sentinex/pages/log_in.dart';
 import 'package:sentinex/providers/user_provider.dart';
+import 'package:sentinex/responsive/mobile_screen_layout.dart';
 import 'package:sentinex/responsive/responsive_screen_layout.dart';
 import 'package:sentinex/responsive/web_screen_layout.dart';
 import 'package:sentinex/utils/my_colors.dart';
 
+import 'utils/string_values.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      appId: '1:177303697074:web:4fa7beecbd6c74dc21bbab',
-      messagingSenderId: '177303697074',
-      projectId: 'cyberwatch-dfd11',
-      apiKey: 'AIzaSyCUSrbTWEnhyMM3d5VRDnMQzOO95L_nG-8',
-      storageBucket: "cyberwatch-dfd11.appspot.com",
+    options: FirebaseOptions(
+      appId: StringValues().appId,
+      messagingSenderId: StringValues().messagingSenderId,
+      projectId: StringValues().projectId,
+      apiKey: StringValues().apiKey,
+      storageBucket: StringValues().storageBucket,
     ),
   );
   runApp(const MyApp());
@@ -46,7 +49,10 @@ class MyApp extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.active) {
               if (snapshot.hasData) {
-                return Dashboard();
+                return ResponsiveLayout(
+                  webScreenLayout: const WebScreenLayout(),
+                  mobileScreenLayout: MobileScreenLayout(),
+                );
               }
             } else if (snapshot.hasError) {
               return const Center(
