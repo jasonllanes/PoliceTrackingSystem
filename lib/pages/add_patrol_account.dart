@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:sentinex/custom_widgets/add_account_dialog.dart';
 import 'package:sentinex/custom_widgets/edit_text_widget.dart';
+import 'package:sentinex/models/patrol_account_details.dart';
 import 'package:sentinex/utils/my_colors.dart';
+import 'package:sentinex/views/accounts_items.dart';
 
 import '../resources/auth_methods.dart';
 import '../utils/utils.dart';
@@ -14,155 +17,210 @@ class Add_Patrol_Account extends StatefulWidget {
 }
 
 class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
+  List<Object> _patrolAccounts = [];
+
   MyColors my_colors = MyColors();
   bool _isLoading = false;
+  bool _isLoadingList = false;
+  bool sortAscending = true;
 
   final TextEditingController _patrolNameController = TextEditingController();
   final TextEditingController _patrolBadgeNumberController =
       TextEditingController();
 
-  void addPatrolAccount() async {
+  Future viewAllPatrolAccounts() async {
     setState(() {
-      _isLoading = true;
+      _isLoadingList = true;
     });
-    String res = await MAuthMethods().addPatrolAccount(
-      name: _patrolNameController.text,
-      badge_number: _patrolBadgeNumberController.text,
-      deployment: '',
-      image_evidence: '',
-      location: GeoPoint(0, 0),
-      station: '',
-      status: '',
-      timestamp: Timestamp.now(),
-    );
+    var querySnapshot = await FirebaseFirestore.instance
+        .collection("Users")
+        .orderBy("timestamp", descending: true)
+        .get();
 
     setState(() {
-      _isLoading = false;
+      _patrolAccounts = List.from(
+          querySnapshot.docs.map((e) => PatrolAccountDetails.fromSnap(e)));
+      if (_patrolAccounts.isEmpty) {
+        _isLoadingList = false;
+        showSnackBar(context, "No Patrol Accounts Found");
+      } else {
+        _isLoadingList = false;
+      }
     });
+  }
 
-    if (res == "Success") {
-      showSnackBar(context, "Success");
-    } else {
-      showSnackBar(context, res);
-    }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    viewAllPatrolAccounts();
   }
 
   @override
   void dispose() {
+    super.dispose();
     _patrolNameController.dispose();
     _patrolBadgeNumberController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text(
-            "Add Patrol Account",
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
+          Padding(
+            padding: const EdgeInsets.all(28.0),
+            child: MaterialButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return DialogAddAccount();
+                  },
+                );
+              },
+              color: my_colors.primaryColor,
+              minWidth: 300,
+              height: 50,
+              child: _isLoading
+                  ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                  : Text(
+                      "Add Patrol Account",
+                      style: TextStyle(color: Colors.white),
+                    ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
           ),
-          SizedBox(
-            height: 20,
-          ),
-          Card(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            elevation: 10,
-            child: Padding(
-              padding: const EdgeInsets.all(28.0),
-              child: Column(
-                //Create text fields for 2 fields and a button: Patrol Name, Patrol Badge Number
-                children: [
-                  //Add labels to the text fields
-                  Container(
-                    width: 300,
-                    child: Text(
-                      "Badge Number",
-                      style: TextStyle(color: Colors.black),
-                      textAlign: TextAlign.left,
+          _isLoadingList
+              ? const CircularProgressIndicator(
+                  color: Colors.white,
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    width: 1000,
+                    child: SingleChildScrollView(
+                      child: DataTable(
+                          border: TableBorder.all(
+                              color: my_colors.primaryColor, width: 2),
+                          sortColumnIndex: 0,
+                          showBottomBorder: true,
+                          headingRowColor: MaterialStateColor.resolveWith(
+                              (states) => my_colors.primaryColor),
+                          dataRowColor: MaterialStateColor.resolveWith(
+                              (states) =>
+                                  my_colors.primaryColor.withOpacity(0.2)),
+                          dividerThickness: 2,
+                          columns: [
+                            DataColumn(
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    if (columnIndex == 0) {
+                                      if (sortAscending) {
+                                        _patrolAccounts.sort((a, b) =>
+                                            (a as PatrolAccountDetails)
+                                                .name!
+                                                .compareTo(
+                                                    (b as PatrolAccountDetails)
+                                                        .name!));
+                                        sortAscending = false;
+                                      } else {
+                                        _patrolAccounts.sort((a, b) =>
+                                            (b as PatrolAccountDetails)
+                                                .name!
+                                                .compareTo(
+                                                    (a as PatrolAccountDetails)
+                                                        .name!));
+                                        sortAscending = true;
+                                      }
+                                    }
+                                  });
+                                },
+                                label: Text('Name')),
+                            DataColumn(label: Text('Badge Number')),
+                            DataColumn(label: Text('Date Created')),
+                            DataColumn(label: Text('')),
+                            DataColumn(label: Text('')),
+                          ],
+                          rows: [
+                            for (var i = 0; i < _patrolAccounts.length; i++)
+                              DataRow(
+                                cells: [
+                                  DataCell(
+                                    showEditIcon: true,
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return Dialog(
+                                              backgroundColor: Colors.white,
+                                              child: IntrinsicHeight(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                      28.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Text(
+                                                        (_patrolAccounts[i]
+                                                                as PatrolAccountDetails)
+                                                            .name,
+                                                        style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontSize: 20,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ));
+                                        },
+                                      );
+                                    },
+                                    AccountsItems(
+                                      accountDetails: _patrolAccounts[i]
+                                          as PatrolAccountDetails,
+                                      column: "name",
+                                    ),
+                                  ),
+                                  DataCell(
+                                    AccountsItems(
+                                      accountDetails: _patrolAccounts[i]
+                                          as PatrolAccountDetails,
+                                      column: "badge_number",
+                                    ),
+                                  ),
+                                  DataCell(
+                                    AccountsItems(
+                                      accountDetails: _patrolAccounts[i]
+                                          as PatrolAccountDetails,
+                                      column: "date_created",
+                                    ),
+                                  ),
+                                  DataCell(
+                                    AccountsItems(
+                                      accountDetails: _patrolAccounts[i]
+                                          as PatrolAccountDetails,
+                                      column: "delete",
+                                    ),
+                                  ),
+                                  DataCell(
+                                    AccountsItems(
+                                      accountDetails: _patrolAccounts[i]
+                                          as PatrolAccountDetails,
+                                      column: "update",
+                                    ),
+                                  ),
+                                ],
+                              )
+                          ]),
                     ),
                   ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    width: 300,
-                    decoration: BoxDecoration(
-                      color: MyColors().primaryColor,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: TextField(
-                      controller: _patrolBadgeNumberController,
-                      decoration: InputDecoration(
-                        hintText: "ex: 123456",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Container(
-                    width: 300,
-                    child: Text(
-                      "Patrol Name",
-                      style: TextStyle(color: Colors.black),
-                      textAlign: TextAlign.left,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    width: 300,
-                    decoration: BoxDecoration(
-                      color: MyColors().primaryColor,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: TextField(
-                      controller: _patrolNameController,
-                      decoration: InputDecoration(
-                        hintText: "ex: John Doe",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  MaterialButton(
-                    onPressed: addPatrolAccount,
-                    color: my_colors.primaryColor,
-                    minWidth: 300,
-                    height: 50,
-                    child: _isLoading
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
-                          )
-                        : Text(
-                            "Add Patrol Account",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                ],
-              ),
-            ),
-          ),
+                ),
         ],
       ),
     );

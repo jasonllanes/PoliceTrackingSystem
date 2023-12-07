@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:sentinex/models/user.dart' as model;
 import '../models/patrol_account_details.dart' as patrol_model;
+import '../models/patrol_account_details.dart';
 
 class MAuthMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -16,6 +17,16 @@ class MAuthMethods {
         await _firestore.collection("users").doc(currentUser.uid).get();
 
     return model.User.fromSnap(snap);
+  }
+
+  Future<List> getAllPatrolAccounts() async {
+    var querySnapshot = await FirebaseFirestore.instance
+        .collection("Users")
+        .orderBy("timestamp", descending: true)
+        .get();
+
+    return List.from(
+        querySnapshot.docs.map((e) => PatrolAccountDetails.fromSnap(e)));
   }
 
   Future<String> singUpUser({
