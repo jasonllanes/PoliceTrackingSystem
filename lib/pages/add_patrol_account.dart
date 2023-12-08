@@ -4,7 +4,7 @@ import 'package:sentinex/custom_widgets/add_account_dialog.dart';
 import 'package:sentinex/custom_widgets/edit_text_widget.dart';
 import 'package:sentinex/main.dart';
 import 'package:sentinex/models/patrol_account_details.dart';
-import 'package:sentinex/pages/practice.dart';
+
 import 'package:sentinex/utils/my_colors.dart';
 import 'package:sentinex/views/accounts_items.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
