@@ -4,29 +4,22 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:sentinex/models/user.dart' as model;
 import '../models/patrol_account_details.dart' as patrol_model;
-import '../models/patrol_account_details.dart';
 
 class MAuthMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<model.User> getUserDetails() async {
+  Future<model.User?> getUserDetails() async {
     User currentUser = _auth.currentUser!;
 
     DocumentSnapshot snap =
         await _firestore.collection("users").doc(currentUser.uid).get();
 
-    return model.User.fromSnap(snap);
-  }
-
-  Future<List> getAllPatrolAccounts() async {
-    var querySnapshot = await FirebaseFirestore.instance
-        .collection("Users")
-        .orderBy("timestamp", descending: true)
-        .get();
-
-    return List.from(
-        querySnapshot.docs.map((e) => PatrolAccountDetails.fromSnap(e)));
+    if (snap.exists) {
+      return model.User.fromSnap(snap);
+    } else {
+      return null;
+    }
   }
 
   Future<String> singUpUser({
@@ -133,6 +126,27 @@ class MAuthMethods {
       res = "Success";
     } catch (e) {
       print(e.toString());
+    }
+
+    return res;
+  }
+
+  Future<String> viewAllPatrolAccounts() async {
+    String res = "Something went wrong!";
+
+    try {
+      QuerySnapshot snap = await _firestore
+          .collection("Users")
+          .orderBy("timestamp", descending: true)
+          .get();
+
+      snap.docs.forEach((element) {
+        print(element..data());
+      });
+
+      res = "Success";
+    } catch (e) {
+      res = e.toString();
     }
 
     return res;

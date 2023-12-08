@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sentinex/pages/home.dart';
+import 'package:sentinex/pages/practice.dart';
 import 'package:sentinex/providers/user_provider.dart';
 import 'package:sentinex/resources/auth_methods.dart';
 import 'package:sentinex/utils/my_colors.dart';
@@ -49,7 +50,7 @@ class _WebDashboardState extends State<WebDashboard> {
       if (panel == "/home") {
         _currentPanel = const Home();
       } else if (panel == "/add_account") {
-        _currentPanel = const Add_Patrol_Account();
+        _currentPanel = Add_Patrol_Account();
       } else {
         _currentPanel = Container();
       }
@@ -63,7 +64,7 @@ class _WebDashboardState extends State<WebDashboard> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text("Web Dashboard "),
+        title: Text("SentiNex Dashboard"),
         actions: [
           IconButton(
             onPressed: () {
@@ -86,7 +87,7 @@ class _WebDashboardState extends State<WebDashboard> {
                   children: [
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: my_colors.primaryColor,
+                        backgroundColor: my_colors.primaryColor,
                         textStyle: TextStyle(color: my_colors.secondaryColor),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(0),
@@ -102,7 +103,7 @@ class _WebDashboardState extends State<WebDashboard> {
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: my_colors.primaryColor,
+                        backgroundColor: my_colors.primaryColor,
                         textStyle: TextStyle(color: my_colors.secondaryColor),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(0),
@@ -127,7 +128,7 @@ class _WebDashboardState extends State<WebDashboard> {
                   children: [
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: my_colors.primaryColor,
+                        backgroundColor: my_colors.primaryColor,
                         textStyle: TextStyle(color: my_colors.secondaryColor),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(0),

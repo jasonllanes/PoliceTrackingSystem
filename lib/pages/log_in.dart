@@ -159,7 +159,7 @@ class _LogInState extends State<LogIn> {
                       children: [
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            primary: my_colors.secondaryColor,
+                            backgroundColor: my_colors.secondaryColor,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(0),
                             ),

@@ -13,11 +13,10 @@ class UserProvider with ChangeNotifier {
   PatrolAccountDetails? get getPatrolAccountDetails => _patrolAccountDetails;
 
   Future<void> refreshUser() async {
-    User user = await _authMethods.getUserDetails();
-    PatrolAccountDetails patrolAccountDetails =
-        (await _authMethods.getAllPatrolAccounts()) as PatrolAccountDetails;
-    _user = user;
-    _patrolAccountDetails = patrolAccountDetails;
-    notifyListeners();
+    User? user = await _authMethods.getUserDetails();
+    if (user != null) {
+      _user = user;
+      notifyListeners();
+    }
   }
 }

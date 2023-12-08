@@ -2,9 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:sentinex/custom_widgets/add_account_dialog.dart';
 import 'package:sentinex/custom_widgets/edit_text_widget.dart';
+import 'package:sentinex/main.dart';
 import 'package:sentinex/models/patrol_account_details.dart';
+import 'package:sentinex/pages/practice.dart';
 import 'package:sentinex/utils/my_colors.dart';
 import 'package:sentinex/views/accounts_items.dart';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 import '../resources/auth_methods.dart';
 import '../utils/utils.dart';
@@ -22,7 +25,10 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
   MyColors my_colors = MyColors();
   bool _isLoading = false;
   bool _isLoadingList = false;
-  bool sortAscending = true;
+
+  late List<PatrolAccountDetails> _employees;
+  late EmployeeDataSource _employeeDataSource;
+  late DataGridController _dataGridController;
 
   final TextEditingController _patrolNameController = TextEditingController();
   final TextEditingController _patrolBadgeNumberController =
@@ -35,17 +41,20 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
     var querySnapshot = await FirebaseFirestore.instance
         .collection("Users")
         .orderBy("timestamp", descending: true)
-        .get();
-
-    setState(() {
-      _patrolAccounts = List.from(
-          querySnapshot.docs.map((e) => PatrolAccountDetails.fromSnap(e)));
-      if (_patrolAccounts.isEmpty) {
-        _isLoadingList = false;
-        showSnackBar(context, "No Patrol Accounts Found");
-      } else {
-        _isLoadingList = false;
-      }
+        .snapshots()
+        .listen((querySnapshot) {
+      setState(() {
+        _patrolAccounts = List.from(
+            querySnapshot.docs.map((e) => PatrolAccountDetails.fromSnap(e)));
+        if (_patrolAccounts.isEmpty) {
+          _isLoadingList = false;
+          showSnackBar(context, "No Patrol Accounts Found");
+        } else {
+          _isLoadingList = false;
+          _employees = getEmployeeData();
+          _employeeDataSource = EmployeeDataSource(_employees);
+        }
+      });
     });
   }
 
@@ -98,131 +107,177 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
               ? const CircularProgressIndicator(
                   color: Colors.white,
                 )
-              : Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 1000,
-                    child: SingleChildScrollView(
-                      child: DataTable(
-                          border: TableBorder.all(
-                              color: my_colors.primaryColor, width: 2),
-                          sortColumnIndex: 0,
-                          showBottomBorder: true,
-                          headingRowColor: MaterialStateColor.resolveWith(
-                              (states) => my_colors.primaryColor),
-                          dataRowColor: MaterialStateColor.resolveWith(
-                              (states) =>
-                                  my_colors.primaryColor.withOpacity(0.2)),
-                          dividerThickness: 2,
-                          columns: [
-                            DataColumn(
-                                onSort: (columnIndex, ascending) {
-                                  setState(() {
-                                    if (columnIndex == 0) {
-                                      if (sortAscending) {
-                                        _patrolAccounts.sort((a, b) =>
-                                            (a as PatrolAccountDetails)
-                                                .name!
-                                                .compareTo(
-                                                    (b as PatrolAccountDetails)
-                                                        .name!));
-                                        sortAscending = false;
-                                      } else {
-                                        _patrolAccounts.sort((a, b) =>
-                                            (b as PatrolAccountDetails)
-                                                .name!
-                                                .compareTo(
-                                                    (a as PatrolAccountDetails)
-                                                        .name!));
-                                        sortAscending = true;
-                                      }
-                                    }
-                                  });
-                                },
-                                label: Text('Name')),
-                            DataColumn(label: Text('Badge Number')),
-                            DataColumn(label: Text('Date Created')),
-                            DataColumn(label: Text('')),
-                            DataColumn(label: Text('')),
-                          ],
-                          rows: [
-                            for (var i = 0; i < _patrolAccounts.length; i++)
-                              DataRow(
-                                cells: [
-                                  DataCell(
-                                    showEditIcon: true,
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return Dialog(
-                                              backgroundColor: Colors.white,
-                                              child: IntrinsicHeight(
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(
-                                                      28.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Text(
-                                                        (_patrolAccounts[i]
-                                                                as PatrolAccountDetails)
-                                                            .name,
-                                                        style: TextStyle(
-                                                            color: Colors.black,
-                                                            fontSize: 20,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ));
-                                        },
-                                      );
-                                    },
-                                    AccountsItems(
-                                      accountDetails: _patrolAccounts[i]
-                                          as PatrolAccountDetails,
-                                      column: "name",
-                                    ),
-                                  ),
-                                  DataCell(
-                                    AccountsItems(
-                                      accountDetails: _patrolAccounts[i]
-                                          as PatrolAccountDetails,
-                                      column: "badge_number",
-                                    ),
-                                  ),
-                                  DataCell(
-                                    AccountsItems(
-                                      accountDetails: _patrolAccounts[i]
-                                          as PatrolAccountDetails,
-                                      column: "date_created",
-                                    ),
-                                  ),
-                                  DataCell(
-                                    AccountsItems(
-                                      accountDetails: _patrolAccounts[i]
-                                          as PatrolAccountDetails,
-                                      column: "delete",
-                                    ),
-                                  ),
-                                  DataCell(
-                                    AccountsItems(
-                                      accountDetails: _patrolAccounts[i]
-                                          as PatrolAccountDetails,
-                                      column: "update",
-                                    ),
-                                  ),
-                                ],
-                              )
-                          ]),
-                    ),
-                  ),
-                ),
+              : table_1(context),
+          // table_1(context),
         ],
       ),
     );
+  }
+
+  Padding table_1(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        width: 1000,
+        child: SingleChildScrollView(
+          child: _isLoadingList
+              ? CircularProgressIndicator(
+                  color: Colors.white,
+                )
+              : SfDataGrid(
+                  allowFiltering: true,
+                  columnResizeMode: ColumnResizeMode.onResize,
+                  gridLinesVisibility: GridLinesVisibility.both,
+                  headerGridLinesVisibility: GridLinesVisibility.both,
+                  columnWidthMode: ColumnWidthMode.auto,
+                  columnWidthCalculationRange:
+                      ColumnWidthCalculationRange.allRows,
+                  allowSorting: true,
+                  selectionMode: SelectionMode.multiple,
+                  source: _employeeDataSource,
+                  columns: <GridColumn>[
+                    GridColumn(
+                        columnName: 'name',
+                        label: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            'Name',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )),
+                    GridColumn(
+                        columnName: 'badge_number',
+                        label: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Badge Number',
+                              overflow: TextOverflow.fade,
+                            ))),
+                    GridColumn(
+                        columnName: 'deployment',
+                        label: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Deployment',
+                              overflow: TextOverflow.ellipsis,
+                            ))),
+                    GridColumn(
+                        columnName: 'image_evidence',
+                        label: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Image Evidence',
+                              overflow: TextOverflow.ellipsis,
+                            ))),
+                    GridColumn(
+                        columnName: 'location',
+                        label: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Location',
+                              overflow: TextOverflow.ellipsis,
+                            ))),
+                    GridColumn(
+                        columnName: 'station',
+                        label: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Station',
+                              overflow: TextOverflow.ellipsis,
+                            ))),
+                    GridColumn(
+                        columnName: 'status',
+                        label: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Status',
+                              overflow: TextOverflow.ellipsis,
+                            ))),
+                    GridColumn(
+                        columnName: 'timestamp',
+                        label: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Timestamp',
+                              overflow: TextOverflow.ellipsis,
+                            ))),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  List<PatrolAccountDetails> getEmployeeData() {
+    return [
+      for (var i = 0; i < _patrolAccounts.length; i++)
+        PatrolAccountDetails(
+          name: (_patrolAccounts[i] as PatrolAccountDetails).name,
+          badge_number:
+              (_patrolAccounts[i] as PatrolAccountDetails).badge_number,
+          deployment: (_patrolAccounts[i] as PatrolAccountDetails).deployment,
+          image_evidence:
+              (_patrolAccounts[i] as PatrolAccountDetails).image_evidence,
+          location: (_patrolAccounts[i] as PatrolAccountDetails).location,
+          station: (_patrolAccounts[i] as PatrolAccountDetails).station,
+          status: (_patrolAccounts[i] as PatrolAccountDetails).status,
+          timestamp: (_patrolAccounts[i] as PatrolAccountDetails).timestamp,
+        ),
+    ];
+  }
+}
+
+class EmployeeDataSource extends DataGridSource {
+  EmployeeDataSource(List<PatrolAccountDetails> employees) {
+    dataGridRows = employees
+        .map<DataGridRow>((dataGridRow) => DataGridRow(cells: [
+              DataGridCell<String>(columnName: 'name', value: dataGridRow.name),
+              DataGridCell<String>(
+                  columnName: 'badge_number', value: dataGridRow.badge_number),
+              DataGridCell<String>(
+                  columnName: 'deployment', value: dataGridRow.deployment),
+              DataGridCell<String>(
+                  columnName: 'image_evidence',
+                  value: dataGridRow.image_evidence),
+              DataGridCell<String>(
+                  columnName: 'location',
+                  value: dataGridRow.location.toString()),
+              DataGridCell<String>(
+                  columnName: 'station', value: dataGridRow.station),
+              DataGridCell<String>(
+                  columnName: 'status', value: dataGridRow.status),
+              DataGridCell<String>(
+                  columnName: 'timestamp',
+                  value: dataGridRow.timestamp.toDate().toString()),
+            ]))
+        .toList();
+  }
+
+  late List<DataGridRow> dataGridRows;
+  @override
+  List<DataGridRow> get rows => dataGridRows;
+  @override
+  DataGridRowAdapter? buildRow(DataGridRow row) {
+    return DataGridRowAdapter(
+        cells: row.getCells().map<Widget>((dataGridCell) {
+      return Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          alignment: (dataGridCell.columnName == 'name' ||
+                  dataGridCell.columnName == 'badge_number')
+              ? Alignment.centerRight
+              : Alignment.centerLeft,
+          child: Text(
+            dataGridCell.value.toString(),
+            overflow: TextOverflow.ellipsis,
+          ));
+    }).toList());
   }
 }

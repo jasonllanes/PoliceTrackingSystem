@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:sentinex/pages/add_patrol_account.dart';
 
 import '../resources/auth_methods.dart';
 import '../utils/my_colors.dart';
@@ -19,6 +20,8 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
 
   MyColors my_colors = MyColors();
   bool _isLoading = false;
+
+  // Add_Patrol_Account add_patrol_account = Add_Patrol_Account();
 
   void addPatrolAccount() async {
     setState(() {
@@ -41,8 +44,11 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
 
     if (res == "Success") {
       showSnackBar(context, "Success");
+
+      Navigator.pop(context);
     } else {
       showSnackBar(context, res);
+      Navigator.pop(context);
     }
   }
 
