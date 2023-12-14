@@ -10,7 +10,7 @@ import 'package:sentinex/responsive/responsive_screen_layout.dart';
 import 'package:sentinex/responsive/web_screen_layout.dart';
 import 'package:sentinex/utils/my_colors.dart';
 
-import 'utils/string_values.dart';
+import 'utils/string_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

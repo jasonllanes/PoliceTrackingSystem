@@ -39,6 +39,10 @@ dependencies:
   location: ^5.0.3
   provider: ^6.1.1
   syncfusion_flutter_datagrid: ^23.2.7
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  syncfusion_flutter_xlsio: ^23.2.7
+  syncfusion_flutter_datagrid_export: ^23.2.7
 
 dev_dependencies:
   flutter_lints: ^2.0.0

@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:html';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:sentinex/custom_widgets/add_account_dialog.dart';
@@ -8,6 +12,9 @@ import 'package:sentinex/models/patrol_account_details.dart';
 import 'package:sentinex/utils/my_colors.dart';
 import 'package:sentinex/views/accounts_items.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+
+import 'package:syncfusion_flutter_datagrid_export/export.dart';
+import 'package:syncfusion_flutter_xlsio/xlsio.dart' as helper;
 
 import '../resources/auth_methods.dart';
 import '../utils/utils.dart';
@@ -33,6 +40,30 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
   final TextEditingController _patrolNameController = TextEditingController();
   final TextEditingController _patrolBadgeNumberController =
       TextEditingController();
+
+  final GlobalKey<SfDataGridState> _key = GlobalKey<SfDataGridState>();
+
+  Future<void> exportDataGridToExcel() async {
+// Create a new Excel Document.
+    final helper.Workbook workbook = helper.Workbook();
+
+// Accessing worksheet via index.
+    final helper.Worksheet sheet = workbook.worksheets[0];
+
+// Set the text value.
+    sheet.getRangeByName('A1').setText('Hello World!');
+
+// Save and dispose the document.
+    final List<int> bytes = workbook.saveSync();
+    workbook.dispose();
+
+//Download the output file in web.
+    AnchorElement(
+        href:
+            "data:application/octet-stream;charset=utf-16le;base64,${base64.encode(bytes)}")
+      ..setAttribute("download", "output.xlsx")
+      ..click();
+  }
 
   Future viewAllPatrolAccounts() async {
     setState(() {
@@ -77,31 +108,55 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(28.0),
-            child: MaterialButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return DialogAddAccount();
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(28.0),
+                child: MaterialButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return DialogAddAccount();
+                      },
+                    );
                   },
-                );
-              },
-              color: my_colors.primaryColor,
-              minWidth: 300,
-              height: 50,
-              child: _isLoading
-                  ? const CircularProgressIndicator(
-                      color: Colors.white,
-                    )
-                  : Text(
-                      "Add Patrol Account",
-                      style: TextStyle(color: Colors.white),
-                    ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
+                  color: my_colors.primaryColor,
+                  minWidth: 300,
+                  height: 50,
+                  child: _isLoading
+                      ? const CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                      : Text(
+                          "Add Patrol Account",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(28.0),
+                child: MaterialButton(
+                  onPressed: exportDataGridToExcel,
+                  color: my_colors.primaryColor,
+                  minWidth: 300,
+                  height: 50,
+                  child: _isLoading
+                      ? const CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                      : Text(
+                          "Export Table",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
           ),
           _isLoadingList
               ? const CircularProgressIndicator(
@@ -118,13 +173,14 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
-        width: 1000,
+        width: 1500,
         child: SingleChildScrollView(
           child: _isLoadingList
               ? CircularProgressIndicator(
                   color: Colors.white,
                 )
               : SfDataGrid(
+                  key: _key,
                   allowFiltering: true,
                   columnResizeMode: ColumnResizeMode.onResize,
                   gridLinesVisibility: GridLinesVisibility.both,

@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sentinex/pages/home.dart';
-import 'package:sentinex/pages/practice.dart';
 import 'package:sentinex/providers/user_provider.dart';
 import 'package:sentinex/resources/auth_methods.dart';
 import 'package:sentinex/utils/my_colors.dart';
