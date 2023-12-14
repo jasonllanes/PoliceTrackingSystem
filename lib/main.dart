@@ -12,7 +12,7 @@ import 'package:sentinex/utils/my_colors.dart';
 
 import 'utils/string_utils.dart';
 
-  void main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: FirebaseOptions(
