@@ -1,22 +1,28 @@
-import 'dart:developer';
-
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:sentinex/pages/add_patrol_account.dart';
 
 import '../resources/auth_methods.dart';
 import '../utils/my_colors.dart';
 import '../utils/utils.dart';
 
-class DialogAddAccount extends StatefulWidget {
-  const DialogAddAccount({super.key});
+class EditAccountDialog extends StatefulWidget {
+  String badge_number;
+  String first_name;
+  String last_name;
+  String rank;
+  EditAccountDialog(
+      {super.key,
+      required this.badge_number,
+      required this.first_name,
+      required this.last_name,
+      required this.rank});
 
   @override
-  State<DialogAddAccount> createState() => _DialogAddAccountState();
+  State<EditAccountDialog> createState() => _EditAccountDialogState();
 }
 
-class _DialogAddAccountState extends State<DialogAddAccount> {
+class _EditAccountDialogState extends State<EditAccountDialog> {
   final TextEditingController _patrolFirstNameController =
       TextEditingController();
   final TextEditingController _patrolLastNameController =
@@ -30,11 +36,11 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
 
   // Add_Patrol_Account add_patrol_account = Add_Patrol_Account();
 
-  void addPatrolAccount() async {
+  void updateCurrentPatrolAccount() async {
     setState(() {
       _isLoading = true;
     });
-    String res = await MAuthMethods().addPatrolAccount(
+    String res = await MAuthMethods().updatePatrolAccount(
       name: _patrolFirstNameController.text +
           " " +
           _patrolLastNameController.text,
@@ -42,12 +48,6 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
       last_name: _patrolLastNameController.text,
       rank: rankSelected,
       badge_number: _patrolBadgeNumberController.text,
-      deployment: 'Not yet deployed',
-      image_evidence: 'No evidence yet',
-      location: GeoPoint(0, 0),
-      station: 'No station yet',
-      status: 'Not yet deployed',
-      timestamp: Timestamp.now(),
       lastUpdated: Timestamp.now(),
     );
 
@@ -82,6 +82,16 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
     'Premier',
     'Prime Minister',
   ];
+
+  @override
+  void initState() {
+    _patrolFirstNameController.text = widget.first_name;
+    _patrolLastNameController.text = widget.last_name;
+    _patrolBadgeNumberController.text = widget.badge_number;
+    rankSelected = widget.rank;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -214,7 +224,7 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
                     ),
                     hintText: 'Select rank',
                     items: _list,
-
+                    initialItem: rankSelected,
                     // key: _For,
                     onChanged: (value) {
                       setState(() => rankSelected = value);
@@ -227,7 +237,9 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
                   height: 20,
                 ),
                 MaterialButton(
-                  onPressed: addPatrolAccount,
+                  onPressed: () {
+                    updateCurrentPatrolAccount();
+                  },
                   color: my_colors.primaryColor,
                   minWidth: 300,
                   height: 50,
@@ -236,7 +248,7 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
                           color: Colors.white,
                         )
                       : Text(
-                          "Add Patrol Account",
+                          "Update Patrol Account",
                           style: TextStyle(color: Colors.white),
                         ),
                   shape: RoundedRectangleBorder(

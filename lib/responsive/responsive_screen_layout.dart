@@ -7,7 +7,7 @@ class ResponsiveLayout extends StatefulWidget {
   final Widget webScreenLayout;
   final Widget mobileScreenLayout;
   const ResponsiveLayout(
-      {super.key,
+      {key,
       required this.webScreenLayout,
       required this.mobileScreenLayout});
 

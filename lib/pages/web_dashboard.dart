@@ -11,6 +11,7 @@ import 'package:sentinex/utils/my_colors.dart';
 import 'package:sentinex/utils/utils.dart';
 import 'package:sentinex/models/user.dart' as model;
 
+import 'add_dep_and_station.dart';
 import 'add_patrol_account.dart';
 import 'log_in.dart';
 
@@ -50,6 +51,8 @@ class _WebDashboardState extends State<WebDashboard> {
         _currentPanel = const Home();
       } else if (panel == "/add_account") {
         _currentPanel = Add_Patrol_Account();
+      } else if (panel == "/add_dep_and_station") {
+        _currentPanel = Add_Dep_And_Station();
       } else {
         _currentPanel = Container();
       }
@@ -60,10 +63,17 @@ class _WebDashboardState extends State<WebDashboard> {
   Widget build(BuildContext context) {
     model.User? user = Provider.of<UserProvider>(context).getUser;
 
+    //Return a drawer for mobile view that can be closed and open
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text("SentiNex Dashboard"),
+        leading: Builder(builder: (context) {
+          return IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          );
+        }),
         actions: [
           IconButton(
             onPressed: () {
@@ -73,86 +83,189 @@ class _WebDashboardState extends State<WebDashboard> {
           ),
         ],
       ),
-      body: Row(
-        children: [
-          Container(
-            width: MediaQuery.of(context).size.width * 0.15,
-            color: my_colors.primaryColor,
-            child: Column(
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: my_colors.primaryColor,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Home",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ),
+                  ),
+                  Text(
+                    "Yeah",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: my_colors.primaryColor,
-                        textStyle: TextStyle(color: my_colors.secondaryColor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                      ),
-                      onPressed: () {
+                    ListTile(
+                      title: const Text("Home"),
+                      onTap: () {
                         changePanel("/home");
+                        Navigator.pop(context);
                       },
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('Home'),
-                      ),
                     ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: my_colors.primaryColor,
-                        textStyle: TextStyle(color: my_colors.secondaryColor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                      ),
-                      onPressed: () {
+                    ListTile(
+                      title: const Text("Manage Patrol Account"),
+                      onTap: () {
                         changePanel("/add_account");
+                        Navigator.pop(context);
                       },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Manage Patrol Account',
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+                    ),
+                    ListTile(
+                      title: const Text("Deployments and Stations"),
+                      onTap: () {
+                        changePanel("/add_dep_and_station");
+                        Navigator.pop(context);
+                      },
                     ),
                   ],
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: my_colors.primaryColor,
-                        textStyle: TextStyle(color: my_colors.secondaryColor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                      ),
-                      onPressed: signOut,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: _isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : const Text('Exit'),
-                      ),
-                    ),
-                  ],
+                ListTile(
+                  title: const Text("Log Out"),
+                  onTap: () {
+                    signOut();
+                    Navigator.pop(context);
+                  },
                 ),
               ],
             ),
-          ),
-          Container(
-            width: MediaQuery.of(context).size.width * 0.85,
-            color: Colors.blue,
-            child: _currentPanel,
-          )
-        ],
+          ],
+        ),
       ),
+      body: _currentPanel,
     );
+
+    // return Scaffold(
+    //   appBar: AppBar(
+    //     automaticallyImplyLeading: false,
+    //     title: Text("SentiNex Dashboard"),
+    //     actions: [
+    //       IconButton(
+    //         onPressed: () {
+    //           showSnackBar(context, "Profile clicked");
+    //         },
+    //         icon: const Icon(Icons.person),
+    //       ),
+    //     ],
+    //   ),
+    //   body: Row(
+    //     children: [
+    //       Container(
+    //         width: MediaQuery.of(context).size.width * 0.15,
+    //         color: my_colors.primaryColor,
+    //         child: Column(
+    //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //           children: [
+    //             Column(
+    //               crossAxisAlignment: CrossAxisAlignment.stretch,
+    //               children: [
+    //                 ElevatedButton(
+    //                   style: ElevatedButton.styleFrom(
+    //                     backgroundColor: my_colors.primaryColor,
+    //                     textStyle: TextStyle(color: my_colors.secondaryColor),
+    //                     shape: RoundedRectangleBorder(
+    //                       borderRadius: BorderRadius.circular(0),
+    //                     ),
+    //                   ),
+    //                   onPressed: () {
+    //                     changePanel("/home");
+    //                   },
+    //                   child: const Padding(
+    //                     padding: EdgeInsets.all(8.0),
+    //                     child: Text('Home'),
+    //                   ),
+    //                 ),
+    //                 ElevatedButton(
+    //                   style: ElevatedButton.styleFrom(
+    //                     backgroundColor: my_colors.primaryColor,
+    //                     textStyle: TextStyle(color: my_colors.secondaryColor),
+    //                     shape: RoundedRectangleBorder(
+    //                       borderRadius: BorderRadius.circular(0),
+    //                     ),
+    //                   ),
+    //                   onPressed: () {
+    //                     changePanel("/add_account");
+    //                   },
+    //                   child: Padding(
+    //                     padding: const EdgeInsets.all(8.0),
+    //                     child: Text(
+    //                       'Manage Patrol Account',
+    //                       overflow: TextOverflow.ellipsis,
+    //                       textAlign: TextAlign.center,
+    //                     ),
+    //                   ),
+    //                 ),
+    //                 ElevatedButton(
+    //                   style: ElevatedButton.styleFrom(
+    //                     backgroundColor: my_colors.primaryColor,
+    //                     textStyle: TextStyle(color: my_colors.secondaryColor),
+    //                     shape: RoundedRectangleBorder(
+    //                       borderRadius: BorderRadius.circular(0),
+    //                     ),
+    //                   ),
+    //                   onPressed: () {
+    //                     changePanel("/add_dep_and_station");
+    //                   },
+    //                   child: Padding(
+    //                     padding: const EdgeInsets.all(8.0),
+    //                     child: Text(
+    //                       'Deployments and Stations',
+    //                       overflow: TextOverflow.ellipsis,
+    //                       textAlign: TextAlign.center,
+    //                     ),
+    //                   ),
+    //                 ),
+    //               ],
+    //             ),
+    //             Column(
+    //               crossAxisAlignment: CrossAxisAlignment.stretch,
+    //               children: [
+    //                 ElevatedButton(
+    //                   style: ElevatedButton.styleFrom(
+    //                     backgroundColor: my_colors.primaryColor,
+    //                     textStyle: TextStyle(color: my_colors.secondaryColor),
+    //                     shape: RoundedRectangleBorder(
+    //                       borderRadius: BorderRadius.circular(0),
+    //                     ),
+    //                   ),
+    //                   onPressed: signOut,
+    //                   child: Padding(
+    //                     padding: const EdgeInsets.all(8.0),
+    //                     child: _isLoading
+    //                         ? const Center(child: CircularProgressIndicator())
+    //                         : const Text('Exit'),
+    //                   ),
+    //                 ),
+    //               ],
+    //             ),
+    //           ],
+    //         ),
+    //       ),
+    //       Container(
+    //         width: MediaQuery.of(context).size.width * 0.85,
+    //         color: Colors.blue,
+    //         child: _currentPanel,
+    //       )
+    //     ],
+    //   ),
+    // );
   }
 }

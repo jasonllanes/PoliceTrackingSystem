@@ -5,22 +5,24 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:sentinex/custom_widgets/add_account_dialog.dart';
+import 'package:sentinex/custom_widgets/delete_prompt.dart';
 import 'package:sentinex/custom_widgets/edit_text_widget.dart';
 import 'package:sentinex/main.dart';
 import 'package:sentinex/models/patrol_account_details.dart';
 
 import 'package:sentinex/utils/my_colors.dart';
-import 'package:sentinex/views/accounts_items.dart';
-import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid_export/export.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as helper;
 
+import '../custom_widgets/edit_account_dialog.dart';
 import '../resources/auth_methods.dart';
 import '../utils/utils.dart';
 
 class Add_Patrol_Account extends StatefulWidget {
-  const Add_Patrol_Account({super.key});
+  const Add_Patrol_Account({key});
 
   @override
   State<Add_Patrol_Account> createState() => _Add_Patrol_AccountState();
@@ -34,7 +36,7 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
   bool _isLoadingList = false;
 
   late List<PatrolAccountDetails> _employees;
-  late EmployeeDataSource _employeeDataSource;
+  late EmployeeDataSource _employeeDataSource = EmployeeDataSource([]);
   late DataGridController _dataGridController;
 
   final TextEditingController _patrolNameController = TextEditingController();
@@ -44,20 +46,11 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
   final GlobalKey<SfDataGridState> _key = GlobalKey<SfDataGridState>();
 
   Future<void> exportDataGridToExcel() async {
-// Create a new Excel Document.
     final helper.Workbook workbook = helper.Workbook();
-
-// Accessing worksheet via index.
     final helper.Worksheet sheet = workbook.worksheets[0];
-
-// Set the text value.
     sheet.getRangeByName('A1').setText('Hello World!');
-
-// Save and dispose the document.
-    final List<int> bytes = workbook.saveSync();
+    final List<int> bytes = workbook.saveAsStream();
     workbook.dispose();
-
-//Download the output file in web.
     AnchorElement(
         href:
             "data:application/octet-stream;charset=utf-16le;base64,${base64.encode(bytes)}")
@@ -174,98 +167,164 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
       padding: const EdgeInsets.all(8.0),
       child: Container(
         width: 1500,
+        height: 400,
         child: SingleChildScrollView(
           child: _isLoadingList
               ? CircularProgressIndicator(
                   color: Colors.white,
                 )
-              : SfDataGrid(
-                  key: _key,
-                  allowFiltering: true,
-                  columnResizeMode: ColumnResizeMode.onResize,
-                  gridLinesVisibility: GridLinesVisibility.both,
-                  headerGridLinesVisibility: GridLinesVisibility.both,
-                  columnWidthMode: ColumnWidthMode.auto,
-                  columnWidthCalculationRange:
-                      ColumnWidthCalculationRange.allRows,
-                  allowSorting: true,
-                  selectionMode: SelectionMode.multiple,
-                  source: _employeeDataSource,
-                  columns: <GridColumn>[
-                    GridColumn(
-                        columnName: 'name',
-                        label: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16.0),
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            'Name',
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        )),
-                    GridColumn(
-                        columnName: 'badge_number',
-                        label: Container(
+              : SfDataGridTheme(
+                  data: SfDataGridThemeData(
+                    headerColor: my_colors.primaryColor,
+                    gridLineColor: MyColors().primaryColor,
+                    selectionColor: my_colors.tertiaryColor,
+                    rowHoverColor: my_colors.tertiaryColor,
+                  ),
+                  child: SfDataGrid(
+                    key: _key,
+                    allowFiltering: true,
+                    allowColumnsResizing: true,
+                    isScrollbarAlwaysShown: true,
+                    columnResizeMode: ColumnResizeMode.onResize,
+                    gridLinesVisibility: GridLinesVisibility.both,
+                    headerGridLinesVisibility: GridLinesVisibility.both,
+                    columnWidthMode: ColumnWidthMode.auto,
+                    columnWidthCalculationRange:
+                        ColumnWidthCalculationRange.allRows,
+                    allowSorting: true,
+                    selectionMode: SelectionMode.none,
+                    source: _employeeDataSource,
+                    onCellDoubleTap: (arg) {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return EditAccountDialog(
+                            badge_number: (_patrolAccounts[
+                                        arg.rowColumnIndex.rowIndex - 1]
+                                    as PatrolAccountDetails)
+                                .badge_number,
+                            first_name: (_patrolAccounts[
+                                        arg.rowColumnIndex.rowIndex - 1]
+                                    as PatrolAccountDetails)
+                                .first_name,
+                            last_name: (_patrolAccounts[
+                                        arg.rowColumnIndex.rowIndex - 1]
+                                    as PatrolAccountDetails)
+                                .last_name,
+                            rank: (_patrolAccounts[arg.rowColumnIndex.rowIndex -
+                                    1] as PatrolAccountDetails)
+                                .rank,
+                          );
+                        },
+                      );
+                    },
+                    onCellLongPress: (arg) {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return DeleteAccount(
+                              badge_number: (_patrolAccounts[
+                                          arg.rowColumnIndex.rowIndex - 1]
+                                      as PatrolAccountDetails)
+                                  .badge_number);
+                        },
+                      );
+                    },
+                    columns: <GridColumn>[
+                      GridColumn(
+                          columnName: 'name',
+                          label: Container(
                             padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            alignment: Alignment.centerLeft,
+                            alignment: Alignment.centerRight,
                             child: Text(
-                              'Badge Number',
-                              overflow: TextOverflow.fade,
-                            ))),
-                    GridColumn(
-                        columnName: 'deployment',
-                        label: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Deployment',
+                              'Name',
                               overflow: TextOverflow.ellipsis,
-                            ))),
-                    GridColumn(
-                        columnName: 'image_evidence',
-                        label: Container(
+                            ),
+                          )),
+                      GridColumn(
+                          columnName: 'rank',
+                          label: Container(
                             padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            alignment: Alignment.centerLeft,
+                            alignment: Alignment.centerRight,
                             child: Text(
-                              'Image Evidence',
+                              'Rank',
                               overflow: TextOverflow.ellipsis,
-                            ))),
-                    GridColumn(
-                        columnName: 'location',
-                        label: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Location',
-                              overflow: TextOverflow.ellipsis,
-                            ))),
-                    GridColumn(
-                        columnName: 'station',
-                        label: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Station',
-                              overflow: TextOverflow.ellipsis,
-                            ))),
-                    GridColumn(
-                        columnName: 'status',
-                        label: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Status',
-                              overflow: TextOverflow.ellipsis,
-                            ))),
-                    GridColumn(
-                        columnName: 'timestamp',
-                        label: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Timestamp',
-                              overflow: TextOverflow.ellipsis,
-                            ))),
-                  ],
+                            ),
+                          )),
+                      GridColumn(
+                          columnName: 'badge_number',
+                          label: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Badge Number',
+                                overflow: TextOverflow.fade,
+                              ))),
+                      GridColumn(
+                          columnName: 'deployment',
+                          label: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Deployment',
+                                overflow: TextOverflow.ellipsis,
+                              ))),
+                      GridColumn(
+                          columnName: 'image_evidence',
+                          label: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Image Evidence',
+                                overflow: TextOverflow.ellipsis,
+                              ))),
+                      GridColumn(
+                          columnName: 'location',
+                          label: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Location',
+                                overflow: TextOverflow.ellipsis,
+                              ))),
+                      GridColumn(
+                          columnName: 'station',
+                          label: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Station',
+                                overflow: TextOverflow.ellipsis,
+                              ))),
+                      GridColumn(
+                          columnName: 'status',
+                          label: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Status',
+                                overflow: TextOverflow.ellipsis,
+                              ))),
+                      GridColumn(
+                          columnName: 'timestamp',
+                          label: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Timestamp',
+                                overflow: TextOverflow.ellipsis,
+                              ))),
+                      GridColumn(
+                          columnName: 'last_updated',
+                          label: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Last Updated',
+                                overflow: TextOverflow.ellipsis,
+                              ))),
+                    ],
+                  ),
                 ),
         ),
       ),
@@ -277,6 +336,9 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
       for (var i = 0; i < _patrolAccounts.length; i++)
         PatrolAccountDetails(
           name: (_patrolAccounts[i] as PatrolAccountDetails).name,
+          first_name: (_patrolAccounts[i] as PatrolAccountDetails).first_name,
+          last_name: (_patrolAccounts[i] as PatrolAccountDetails).last_name,
+          rank: (_patrolAccounts[i] as PatrolAccountDetails).rank,
           badge_number:
               (_patrolAccounts[i] as PatrolAccountDetails).badge_number,
           deployment: (_patrolAccounts[i] as PatrolAccountDetails).deployment,
@@ -286,6 +348,7 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
           station: (_patrolAccounts[i] as PatrolAccountDetails).station,
           status: (_patrolAccounts[i] as PatrolAccountDetails).status,
           timestamp: (_patrolAccounts[i] as PatrolAccountDetails).timestamp,
+          lastUpdated: (_patrolAccounts[i] as PatrolAccountDetails).lastUpdated,
         ),
     ];
   }
@@ -296,6 +359,7 @@ class EmployeeDataSource extends DataGridSource {
     dataGridRows = employees
         .map<DataGridRow>((dataGridRow) => DataGridRow(cells: [
               DataGridCell<String>(columnName: 'name', value: dataGridRow.name),
+              DataGridCell<String>(columnName: 'rank', value: dataGridRow.rank),
               DataGridCell<String>(
                   columnName: 'badge_number', value: dataGridRow.badge_number),
               DataGridCell<String>(
@@ -313,6 +377,9 @@ class EmployeeDataSource extends DataGridSource {
               DataGridCell<String>(
                   columnName: 'timestamp',
                   value: dataGridRow.timestamp.toDate().toString()),
+              DataGridCell<String>(
+                  columnName: 'last_updated',
+                  value: dataGridRow.lastUpdated.toDate().toString()),
             ]))
         .toList();
   }
@@ -327,7 +394,7 @@ class EmployeeDataSource extends DataGridSource {
       return Container(
           padding: EdgeInsets.symmetric(horizontal: 16.0),
           alignment: (dataGridCell.columnName == 'name' ||
-                  dataGridCell.columnName == 'badge_number')
+                  dataGridCell.columnName == 'rank')
               ? Alignment.centerRight
               : Alignment.centerLeft,
           child: Text(

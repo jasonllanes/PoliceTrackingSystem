@@ -27,7 +27,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
         title: 'SentiNex',
         theme: ThemeData.dark(useMaterial3: false).copyWith(
           primaryColor: MyColors().secondaryColor,
-          scaffoldBackgroundColor: MyColors().primaryColor,
+          scaffoldBackgroundColor: MyColors().primaryColor2,
         ),
         home: StreamBuilder(
           stream: FirebaseAuth.instance.authStateChanges(),

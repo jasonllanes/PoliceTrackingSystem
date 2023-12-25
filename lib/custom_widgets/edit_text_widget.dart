@@ -11,7 +11,7 @@ class EditTextWidget extends StatelessWidget {
   final TextInputType? inputType;
 
   const EditTextWidget(
-      {super.key,
+      {key,
       required this.label,
       this.hint = '',
       required this.controller,
