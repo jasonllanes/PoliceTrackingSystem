@@ -233,6 +233,36 @@ class MAuthMethods {
     return res;
   }
 
+  Future<String> deleteDeployment({required String deployment}) async {
+    String res = "Something went wrong!";
+
+    try {
+      await _firestore.collection("Dropdown").doc("data").update({
+        "deployments": FieldValue.arrayRemove([deployment])
+      });
+
+      res = "Success";
+    } catch (e) {
+      res = e.toString();
+    }
+    return res;
+  }
+
+  Future<String> deleteStation({required String station}) async {
+    String res = "Something went wrong!";
+
+    try {
+      await _firestore.collection("Dropdown").doc("data").update({
+        "stations": FieldValue.arrayRemove([station])
+      });
+
+      res = "Success";
+    } catch (e) {
+      res = e.toString();
+    }
+    return res;
+  }
+
   // Sign out
   Future<String> signOut() async {
     String res = "Something went wrong!";

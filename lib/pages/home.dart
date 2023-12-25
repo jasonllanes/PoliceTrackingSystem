@@ -15,18 +15,25 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-List<String> _list = [];
+List<String> _list = [""];
+List<Offset> pointList = <Offset>[];
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-var rankSelected = "";
-
-Future<List<String>> fetchList() async {
-  QuerySnapshot querySnapshot = await _firestore.collection('Dropdown').get();
-  return querySnapshot.docs.map((doc) => doc['data']).toList().cast<String>();
-}
+var station = "";
 
 class _HomeState extends State<Home> {
   final MapController mapController = MapController();
   LatLng _center = LatLng(8.4748454, 124.6482512);
+
+  Future<List<String>> fetchList() async {
+    List<String> list = [];
+    await _firestore.collection('Dropdown').get().then((querySnapshot) {
+      querySnapshot.docs.forEach((result) {
+        List<String> stations = List<String>.from(result.data()['stations']);
+        list.addAll(stations);
+      });
+    });
+    return list;
+  }
 
   @override
   void initState() {
@@ -38,6 +45,8 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    var _station;
+
     return Row(
       children: [
         Container(
@@ -66,8 +75,8 @@ class _HomeState extends State<Home> {
                 markers: [
                   Marker(
                     point: _center,
-                    width: 100,
-                    height: 100,
+                    width: 1.0,
+                    height: 1.0,
                     child: Tooltip(
                         message: 'Location: 8.4748454, 124.6482512',
                         child: Icon(Icons.location_on, color: Colors.red)),
@@ -77,82 +86,114 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
-        //Generate a list of accounts
-        //Create 2 dropdowns for Station and Deployment
-
-        Container(
-          width: 300,
-          child: CustomDropdown<String>(
-            closedFillColor: MyColors().primaryColor,
-            expandedFillColor: MyColors().primaryColor,
-            expandedSuffixIcon: const Icon(
-              Icons.arrow_drop_up,
-              color: Colors.white,
-            ),
-            closedSuffixIcon: const Icon(
-              Icons.arrow_drop_down,
-              color: Colors.white,
-            ),
-            hintText: 'Select rank',
-            items: _list,
-
-            // key: _For,
-            onChanged: (value) {
-              setState(() => rankSelected = value);
-
-              print('changing value to: $value');
-            },
-          ),
-        ),
         Container(
           width: MediaQuery.of(context).size.width * 0.25,
-          child: StreamBuilder(
-            stream: FirebaseFirestore.instance.collection('Users').snapshots(),
-            builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              return ListView.builder(
-                itemCount: snapshot.data!.docs.length,
-                itemBuilder: (context, index) {
-                  DocumentSnapshot ds = snapshot.data!.docs[index];
-                  PatrolAccountDetails patrolAccountDetails =
-                      PatrolAccountDetails.fromSnap(ds);
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _center = LatLng(
-                            patrolAccountDetails.location.latitude.toDouble(),
-                            patrolAccountDetails.location.longitude.toDouble());
-                      });
+          child: Column(
+            children: [
+              CustomDropdown<String>(
+                closedFillColor: MyColors().primaryColor,
+                expandedFillColor: MyColors().primaryColor,
+                expandedSuffixIcon: const Icon(
+                  Icons.arrow_drop_up,
+                  color: Colors.white,
+                ),
+                closedSuffixIcon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.white,
+                ),
+                hintText: 'Select station',
+                items: _list,
 
-                      mapController.move(
-                          LatLng(
-                              patrolAccountDetails.location.latitude.toDouble(),
-                              patrolAccountDetails.location.longitude
-                                  .toDouble()),
-                          17.0);
-                      print(patrolAccountDetails.location.latitude.toString() +
-                          ", " +
-                          patrolAccountDetails.location.longitude.toString());
-                    },
-                    child: Card(
-                      color: MyColors().primaryColor,
-                      child: ListTile(
-                          title: Text(patrolAccountDetails.name),
-                          subtitle: Text(patrolAccountDetails.badge_number),
-                          trailing: Text(patrolAccountDetails.location.latitude
-                                  .toString() +
-                              ", " +
-                              patrolAccountDetails.location.longitude
-                                  .toString())),
+                // key: _For,
+                onChanged: (value) {
+                  setState(() => station = value);
+
+                  print('changing value to: $value');
+                },
+              ),
+              CustomDropdown<String>(
+                closedFillColor: MyColors().primaryColor,
+                expandedFillColor: MyColors().primaryColor,
+                expandedSuffixIcon: const Icon(
+                  Icons.arrow_drop_up,
+                  color: Colors.white,
+                ),
+                closedSuffixIcon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.white,
+                ),
+                hintText: 'Select deployment',
+                items: _list,
+
+                // key: _For,
+                onChanged: (value) {
+                  setState(() => station = value);
+
+                  print('changing value to: $value');
+                },
+              ),
+              StreamBuilder(
+                stream: station == ""
+                    ? FirebaseFirestore.instance.collection('Users').snapshots()
+                    : FirebaseFirestore.instance
+                        .collection('Users')
+                        .where('station', isEqualTo: station)
+                        .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListView.builder(
+                        itemCount: snapshot.data!.docs.length,
+                        itemBuilder: (context, index) {
+                          DocumentSnapshot ds = snapshot.data!.docs[index];
+                          PatrolAccountDetails patrolAccountDetails =
+                              PatrolAccountDetails.fromSnap(ds);
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _center = LatLng(
+                                    patrolAccountDetails.location.latitude
+                                        .toDouble(),
+                                    patrolAccountDetails.location.longitude
+                                        .toDouble());
+                              });
+
+                              mapController.move(
+                                  LatLng(
+                                      patrolAccountDetails.location.latitude
+                                          .toDouble(),
+                                      patrolAccountDetails.location.longitude
+                                          .toDouble()),
+                                  17.0);
+                              print(patrolAccountDetails.location.latitude
+                                      .toString() +
+                                  ", " +
+                                  patrolAccountDetails.location.longitude
+                                      .toString());
+                            },
+                            child: Card(
+                              color: MyColors().primaryColor,
+                              child: ListTile(
+                                title: Text(patrolAccountDetails.name),
+                                subtitle: Text(patrolAccountDetails.station +
+                                    ", " +
+                                    patrolAccountDetails.deployment),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   );
                 },
-              );
-            },
+              ),
+            ],
           ),
         ),
       ],
