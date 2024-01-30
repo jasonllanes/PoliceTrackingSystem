@@ -59,6 +59,7 @@ class _LogInState extends State<LogIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: my_colors.primaryColor,
       body: Center(
         child: Card(
           color: my_colors.primaryColor,
@@ -129,8 +130,8 @@ class _LogInState extends State<LogIn> {
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureText
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: my_colors.secondaryColor,
                           ),
                           onPressed: _togglePasswordVisibility,
@@ -152,38 +153,43 @@ class _LogInState extends State<LogIn> {
                       ),
                     ),
                   ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: my_colors.secondaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(0),
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 200,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: my_colors.secondaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: logInUser,
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: _isLoading
+                                    ? Center(
+                                        child: CircularProgressIndicator(
+                                          color: my_colors.primaryColor,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Log In',
+                                        style: TextStyle(
+                                          color: my_colors.primaryColor,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ),
                             ),
                           ),
-                          onPressed: logInUser,
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: _isLoading
-                                ? Center(
-                                    child: CircularProgressIndicator(
-                                      color: my_colors.primaryColor,
-                                    ),
-                                  )
-                                : Text(
-                                    'Log In',
-                                    style: TextStyle(
-                                      color: my_colors.primaryColor,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],

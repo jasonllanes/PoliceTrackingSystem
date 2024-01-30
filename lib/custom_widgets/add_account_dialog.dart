@@ -66,21 +66,13 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
   }
 
   List<String> _list = [
-    'Constable',
-    'Sergeant',
-    'Staff Sergeant',
-    'Inspector',
-    'Superintendent',
-    'Assistant Commissioner',
-    'Deputy Commissioner',
-    'Commissioner',
-    'Deputy Chief',
-    'Chief',
-    'Deputy Minister',
-    'Minister',
-    'Deputy Premier',
-    'Premier',
-    'Prime Minister',
+    'SPO1',
+    'SPO2',
+    'SPO3',
+    'SPO4',
+    'PO1',
+    'PO2',
+    'PO3',
   ];
   @override
   Widget build(BuildContext context) {
@@ -116,6 +108,7 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: TextField(
+                    style: TextStyle(color: Colors.white),
                     controller: _patrolBadgeNumberController,
                     decoration: InputDecoration(
                       hintText: "ex: 123456",
@@ -146,6 +139,7 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: TextField(
+                    style: TextStyle(color: Colors.white),
                     controller: _patrolFirstNameController,
                     decoration: InputDecoration(
                       hintText: "ex: John",
@@ -176,6 +170,7 @@ class _DialogAddAccountState extends State<DialogAddAccount> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: TextField(
+                    style: TextStyle(color: Colors.white),
                     controller: _patrolLastNameController,
                     decoration: InputDecoration(
                       hintText: "ex: Doe",

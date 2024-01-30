@@ -14,6 +14,7 @@ import 'package:sentinex/models/user.dart' as model;
 import 'add_dep_and_station.dart';
 import 'add_patrol_account.dart';
 import 'log_in.dart';
+import 'show_profile.dart';
 
 class WebDashboard extends StatefulWidget {
   WebDashboard({Key? key}) : super(key: key);
@@ -43,7 +44,40 @@ class _WebDashboardState extends State<WebDashboard> {
     setState(() => _isLoading = false);
   }
 
-  Widget _currentPanel = Container(); // default widget
+  Widget _currentPanel = Container(
+    //Showing a big logo in the center
+    child: Scaffold(
+      backgroundColor: MyColors().oxfordBlue,
+      body: Center(
+        child: Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                "assets/images/sentinex_logo.png",
+                width: 200,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Welcome to SentiNex",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Please select a panel from the left",
+                style: TextStyle(
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  ); // default widget
 
   void changePanel(String panel) {
     setState(() {
@@ -53,6 +87,8 @@ class _WebDashboardState extends State<WebDashboard> {
         _currentPanel = Add_Patrol_Account();
       } else if (panel == "/add_dep_and_station") {
         _currentPanel = Add_Dep_And_Station();
+      } else if (panel == "/show_profile") {
+        _currentPanel = ShowProfile();
       } else {
         _currentPanel = Container();
       }
@@ -67,6 +103,7 @@ class _WebDashboardState extends State<WebDashboard> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        backgroundColor: my_colors.pennBlue,
         title: Text("SentiNex Dashboard"),
         leading: Builder(builder: (context) {
           return IconButton(
@@ -75,10 +112,25 @@ class _WebDashboardState extends State<WebDashboard> {
           );
         }),
         actions: [
-          IconButton(
-            onPressed: () {
-              showSnackBar(context, "Profile clicked");
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'profile') {
+                changePanel("/show_profile");
+              } else if (value == 'logout') {
+                signOut();
+                showSnackBar(context, "Logged out");
+              }
             },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'profile',
+                child: Text('Show Profile'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'logout',
+                child: Text('Log Out'),
+              ),
+            ],
             icon: const Icon(Icons.person),
           ),
         ],
@@ -94,14 +146,14 @@ class _WebDashboardState extends State<WebDashboard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Home",
+                    "Sentinex",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                     ),
                   ),
                   Text(
-                    "Yeah",
+                    "Admin",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -137,13 +189,6 @@ class _WebDashboardState extends State<WebDashboard> {
                       },
                     ),
                   ],
-                ),
-                ListTile(
-                  title: const Text("Log Out"),
-                  onTap: () {
-                    signOut();
-                    Navigator.pop(context);
-                  },
                 ),
               ],
             ),

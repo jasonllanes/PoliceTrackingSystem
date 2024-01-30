@@ -42,7 +42,15 @@ class MyApp extends StatelessWidget {
         title: 'SentiNex',
         theme: ThemeData.dark(useMaterial3: false).copyWith(
           primaryColor: MyColors().secondaryColor,
-          scaffoldBackgroundColor: MyColors().primaryColor2,
+          appBarTheme: AppBarTheme(
+            backgroundColor: MyColors().pennBlue,
+            elevation: 0,
+          ),
+          scaffoldBackgroundColor: MyColors().primaryColor,
+          textTheme: const TextTheme(
+            bodyText1: TextStyle(color: Colors.white),
+            bodyText2: TextStyle(color: Colors.white),
+          ),
         ),
         home: StreamBuilder(
           stream: FirebaseAuth.instance.authStateChanges(),

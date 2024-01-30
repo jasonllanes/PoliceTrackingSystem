@@ -76,6 +76,7 @@ class _DialogAddStationState extends State<DialogAddStation> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: TextField(
+                    style: TextStyle(color: Colors.white),
                     controller: _station,
                     decoration: InputDecoration(
                       hintText: "ex: Garfiel, Vesta, etc..",

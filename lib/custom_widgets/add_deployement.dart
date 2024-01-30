@@ -75,6 +75,7 @@ class _DialogAddDeploymentState extends State<DialogAddDeployment> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: TextField(
+                    style: TextStyle(color: Colors.white),
                     controller: _deployment,
                     decoration: InputDecoration(
                       hintText: "ex: Beat Patrol,Mobile Patrol,etc..",

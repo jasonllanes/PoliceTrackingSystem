@@ -46,40 +46,60 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
   final GlobalKey<SfDataGridState> _key = GlobalKey<SfDataGridState>();
 
   Future<void> exportDataGridToExcel() async {
-    final helper.Workbook workbook = helper.Workbook();
-    final helper.Worksheet sheet = workbook.worksheets[0];
-    sheet.getRangeByName('A1').setText('Hello World!');
+    final helper.Workbook workbook = _key.currentState!.exportToExcelWorkbook();
     final List<int> bytes = workbook.saveAsStream();
     workbook.dispose();
     AnchorElement(
         href:
             "data:application/octet-stream;charset=utf-16le;base64,${base64.encode(bytes)}")
-      ..setAttribute("download", "output.xlsx")
+      ..setAttribute("download", "Account_Report.xlsx")
       ..click();
   }
 
-  Future viewAllPatrolAccounts() async {
+  Future viewAllPatrolAccounts({bool filterByStatus = true}) async {
     setState(() {
       _isLoadingList = true;
     });
-    var querySnapshot = await FirebaseFirestore.instance
-        .collection("Users")
-        .orderBy("timestamp", descending: true)
-        .snapshots()
-        .listen((querySnapshot) {
-      setState(() {
-        _patrolAccounts = List.from(
-            querySnapshot.docs.map((e) => PatrolAccountDetails.fromSnap(e)));
-        if (_patrolAccounts.isEmpty) {
-          _isLoadingList = false;
-          showSnackBar(context, "No Patrol Accounts Found");
-        } else {
-          _isLoadingList = false;
-          _employees = getEmployeeData();
-          _employeeDataSource = EmployeeDataSource(_employees);
-        }
+
+    if (filterByStatus) {
+      var querySnapshot = await FirebaseFirestore.instance
+          .collection("Users")
+          .orderBy("timestamp", descending: true)
+          .snapshots()
+          .listen((querySnapshot) {
+        setState(() {
+          _patrolAccounts = List.from(
+              querySnapshot.docs.map((e) => PatrolAccountDetails.fromSnap(e)));
+          if (_patrolAccounts.isEmpty) {
+            _isLoadingList = false;
+            showSnackBar(context, "No Patrol Accounts Found");
+          } else {
+            _isLoadingList = false;
+            _employees = getEmployeeData();
+            _employeeDataSource = EmployeeDataSource(_employees);
+          }
+        });
       });
-    });
+    } else {
+      var querySnapshot = await FirebaseFirestore.instance
+          .collection("Logs")
+          .where("status", isEqualTo: "Timed In")
+          .snapshots()
+          .listen((querySnapshot) {
+        setState(() {
+          _patrolAccounts = List.from(
+              querySnapshot.docs.map((e) => PatrolAccountDetails.fromSnap(e)));
+          if (_patrolAccounts.isEmpty) {
+            _isLoadingList = false;
+            showSnackBar(context, "No Patrol Accounts Found");
+          } else {
+            _isLoadingList = false;
+            _employees = getEmployeeData();
+            _employeeDataSource = EmployeeDataSource(_employees);
+          }
+        });
+      });
+    }
   }
 
   @override
@@ -97,67 +117,122 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(28.0),
-                child: MaterialButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return DialogAddAccount();
-                      },
-                    );
-                  },
-                  color: my_colors.primaryColor,
-                  minWidth: 300,
-                  height: 50,
-                  child: _isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                        )
-                      : Text(
-                          "Add Patrol Account",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+    return Scaffold(
+      backgroundColor: my_colors.oxfordBlue,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(28.0),
+                  child: MaterialButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return DialogAddAccount();
+                        },
+                      );
+                    },
+                    color: my_colors.royalBlue,
+                    minWidth: 300,
+                    height: 50,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : Text(
+                            "Add Patrol Account",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(28.0),
-                child: MaterialButton(
-                  onPressed: exportDataGridToExcel,
-                  color: my_colors.primaryColor,
-                  minWidth: 300,
-                  height: 50,
-                  child: _isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                        )
-                      : Text(
-                          "Export Table",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                Padding(
+                  padding: const EdgeInsets.all(28.0),
+                  child: MaterialButton(
+                    onPressed: exportDataGridToExcel,
+                    color: my_colors.royalBlue,
+                    minWidth: 300,
+                    height: 50,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : Text(
+                            "Export Table",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          _isLoadingList
-              ? const CircularProgressIndicator(
-                  color: Colors.white,
-                )
-              : table_1(context),
-          // table_1(context),
-        ],
+              ],
+            ),
+            //Add a 2 tabs here which are All Users and All Deployed Users
+            _isLoadingList
+                ? const CircularProgressIndicator(
+                    color: Colors.white,
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: MaterialButton(
+                          onPressed: () {
+                            viewAllPatrolAccounts(filterByStatus: true);
+                          },
+                          color: my_colors.primaryColor2,
+                          minWidth: 300,
+                          height: 50,
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  "All Patrol Accounts",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: MaterialButton(
+                          onPressed: () {
+                            viewAllPatrolAccounts(filterByStatus: false);
+                          },
+                          color: my_colors.primaryColor2,
+                          minWidth: 300,
+                          height: 50,
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  "All Deployed Patrol Accounts",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ],
+                  ),
+            _isLoadingList
+                ? const CircularProgressIndicator(
+                    color: Colors.white,
+                  )
+                : table_1(context),
+            // table_1(context),
+          ],
+        ),
       ),
     );
   }
@@ -169,16 +244,17 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
         width: 1500,
         height: 400,
         child: SingleChildScrollView(
+          padding: const EdgeInsets.all(10.0),
           child: _isLoadingList
               ? CircularProgressIndicator(
                   color: Colors.white,
                 )
               : SfDataGridTheme(
                   data: SfDataGridThemeData(
-                    headerColor: my_colors.primaryColor,
-                    gridLineColor: MyColors().primaryColor,
-                    selectionColor: my_colors.tertiaryColor,
-                    rowHoverColor: my_colors.tertiaryColor,
+                    headerColor: my_colors.pictonBlue,
+                    gridLineColor: MyColors().pictonBlue,
+                    selectionColor: my_colors.pictonBlue,
+                    rowHoverColor: const Color.fromARGB(255, 155, 155, 155),
                   ),
                   child: SfDataGrid(
                     key: _key,
@@ -199,6 +275,10 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
                         context: context,
                         builder: (context) {
                           return EditAccountDialog(
+                            image_link: (_patrolAccounts[
+                                        arg.rowColumnIndex.rowIndex - 1]
+                                    as PatrolAccountDetails)
+                                .image_evidence,
                             badge_number: (_patrolAccounts[
                                         arg.rowColumnIndex.rowIndex - 1]
                                     as PatrolAccountDetails)
@@ -237,6 +317,7 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
                             padding: EdgeInsets.symmetric(horizontal: 16.0),
                             alignment: Alignment.centerRight,
                             child: Text(
+                              style: TextStyle(color: Colors.white),
                               'Name',
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -245,8 +326,9 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
                           columnName: 'rank',
                           label: Container(
                             padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            alignment: Alignment.centerRight,
+                            alignment: Alignment.centerLeft,
                             child: Text(
+                              style: TextStyle(color: Colors.white),
                               'Rank',
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -257,6 +339,7 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
                               padding: EdgeInsets.symmetric(horizontal: 16.0),
                               alignment: Alignment.centerLeft,
                               child: Text(
+                                style: TextStyle(color: Colors.white),
                                 'Badge Number',
                                 overflow: TextOverflow.fade,
                               ))),
@@ -266,24 +349,26 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
                               padding: EdgeInsets.symmetric(horizontal: 16.0),
                               alignment: Alignment.centerLeft,
                               child: Text(
+                                style: TextStyle(color: Colors.white),
                                 'Deployment',
                                 overflow: TextOverflow.ellipsis,
                               ))),
-                      GridColumn(
-                          columnName: 'image_evidence',
-                          label: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                'Image Evidence',
-                                overflow: TextOverflow.ellipsis,
-                              ))),
+                      // GridColumn(
+                      //     columnName: 'image_evidence',
+                      //     label: Container(
+                      //         padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      //         alignment: Alignment.centerLeft,
+                      //         child: Text(
+                      //           'Image Evidence',
+                      //           overflow: TextOverflow.ellipsis,
+                      //         ))),
                       GridColumn(
                           columnName: 'location',
                           label: Container(
                               padding: EdgeInsets.symmetric(horizontal: 16.0),
                               alignment: Alignment.centerLeft,
                               child: Text(
+                                style: TextStyle(color: Colors.white),
                                 'Location',
                                 overflow: TextOverflow.ellipsis,
                               ))),
@@ -294,6 +379,7 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 'Station',
+                                style: TextStyle(color: Colors.white),
                                 overflow: TextOverflow.ellipsis,
                               ))),
                       GridColumn(
@@ -303,6 +389,7 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 'Status',
+                                style: TextStyle(color: Colors.white),
                                 overflow: TextOverflow.ellipsis,
                               ))),
                       GridColumn(
@@ -312,6 +399,7 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 'Timestamp',
+                                style: TextStyle(color: Colors.white),
                                 overflow: TextOverflow.ellipsis,
                               ))),
                       GridColumn(
@@ -321,6 +409,7 @@ class _Add_Patrol_AccountState extends State<Add_Patrol_Account> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 'Last Updated',
+                                style: TextStyle(color: Colors.white),
                                 overflow: TextOverflow.ellipsis,
                               ))),
                     ],
@@ -364,9 +453,9 @@ class EmployeeDataSource extends DataGridSource {
                   columnName: 'badge_number', value: dataGridRow.badge_number),
               DataGridCell<String>(
                   columnName: 'deployment', value: dataGridRow.deployment),
-              DataGridCell<String>(
-                  columnName: 'image_evidence',
-                  value: dataGridRow.image_evidence),
+              // DataGridCell<String>(
+              //     columnName: 'image_evidence',
+              //     value: dataGridRow.image_evidence),
               DataGridCell<String>(
                   columnName: 'location',
                   value: dataGridRow.location.toString()),
@@ -390,17 +479,20 @@ class EmployeeDataSource extends DataGridSource {
   @override
   DataGridRowAdapter? buildRow(DataGridRow row) {
     return DataGridRowAdapter(
+        color: MyColors().secondaryColor,
         cells: row.getCells().map<Widget>((dataGridCell) {
-      return Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          alignment: (dataGridCell.columnName == 'name' ||
-                  dataGridCell.columnName == 'rank')
-              ? Alignment.centerRight
-              : Alignment.centerLeft,
-          child: Text(
-            dataGridCell.value.toString(),
-            overflow: TextOverflow.ellipsis,
-          ));
-    }).toList());
+          return Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              alignment: (dataGridCell.columnName == 'name' ||
+                      dataGridCell.columnName == 'rank')
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
+              child: Text(
+                dataGridCell.value.toString(),
+                maxLines: 1,
+                style: TextStyle(color: Colors.black),
+                overflow: TextOverflow.ellipsis,
+              ));
+        }).toList());
   }
 }

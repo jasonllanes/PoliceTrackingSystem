@@ -41,10 +41,18 @@ class _DeleteAccountState extends State<DeleteAccount> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Delete Account"),
+      title: const Text(
+        "Delete Account",
+        style: TextStyle(
+          color: Colors.white,
+        ),
+      ),
       content: _isLoading
           ? CircularProgressIndicator()
-          : Text("Are you sure you want to delete this account?"),
+          : Text("Are you sure you want to delete this account?",
+              style: TextStyle(
+                color: Colors.white,
+              )),
       actions: [
         TextButton(
           onPressed: () {

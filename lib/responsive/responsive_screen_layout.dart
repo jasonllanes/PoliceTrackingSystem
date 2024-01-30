@@ -7,9 +7,7 @@ class ResponsiveLayout extends StatefulWidget {
   final Widget webScreenLayout;
   final Widget mobileScreenLayout;
   const ResponsiveLayout(
-      {key,
-      required this.webScreenLayout,
-      required this.mobileScreenLayout});
+      {key, required this.webScreenLayout, required this.mobileScreenLayout});
 
   @override
   State<ResponsiveLayout> createState() => _ResponsiveLayoutState();
@@ -31,11 +29,11 @@ class _ResponsiveLayoutState extends State<ResponsiveLayout> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth >= webSize) {
-          return widget.webScreenLayout;
-        }
+        // if (constraints.maxWidth >= webSize) {
+        return widget.webScreenLayout;
+        // }
         //mobile screen
-        return widget.mobileScreenLayout;
+        // return widget.mobileScreenLayout;
       },
     );
   }

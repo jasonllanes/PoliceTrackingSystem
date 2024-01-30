@@ -22,6 +22,20 @@ class MAuthMethods {
     }
   }
 
+  //Show authenticated user details
+  Future<model.User?> viewPatrolAccountDetails() async {
+    User currentUser = _auth.currentUser!;
+
+    DocumentSnapshot snap =
+        await _firestore.collection("Users").doc(currentUser.uid).get();
+
+    if (snap.exists) {
+      return model.User.fromSnap(snap);
+    } else {
+      return null;
+    }
+  }
+
   //Show all names in a list without a model
   Future<String> viewAllPatrolAccounts() async {
     String res = "Something went wrong!";

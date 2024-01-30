@@ -77,186 +77,203 @@ class _Add_Dep_And_StationState extends State<Add_Dep_And_Station> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(28.0),
-                child: MaterialButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return DialogAddDeployment();
-                      },
-                    );
-                  },
-                  color: my_colors.primaryColor,
-                  minWidth: 300,
-                  height: 50,
-                  child: _isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                        )
-                      : Text(
-                          "Add a new Deployment",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+    return Scaffold(
+      backgroundColor: my_colors.primaryColor,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(28.0),
+                  child: MaterialButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return DialogAddDeployment();
+                        },
+                      );
+                    },
+                    color: my_colors.royalBlue,
+                    minWidth: 300,
+                    height: 50,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : Text(
+                            "Add a new Deployment",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(28.0),
-                child: MaterialButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return DialogAddStation();
-                      },
-                    );
-                  },
-                  color: my_colors.primaryColor,
-                  minWidth: 300,
-                  height: 50,
-                  child: _isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                        )
-                      : Text(
-                          "Add a new Station",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                Padding(
+                  padding: const EdgeInsets.all(28.0),
+                  child: MaterialButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return DialogAddStation();
+                        },
+                      );
+                    },
+                    color: my_colors.royalBlue,
+                    minWidth: 300,
+                    height: 50,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : Text(
+                            "Add a new Station",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          StreamBuilder(
-            stream:
-                FirebaseFirestore.instance.collection('Dropdown').snapshots(),
-            builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
+              ],
+            ),
+            StreamBuilder(
+              stream:
+                  FirebaseFirestore.instance.collection('Dropdown').snapshots(),
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                return Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              Text('Deployments',
+                                  style: TextStyle(
+                                      color: MyColors().secondaryColor,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: snapshot.data!.docs.length,
+                                  itemBuilder: (context, index) {
+                                    DocumentSnapshot ds =
+                                        snapshot.data!.docs[index];
+                                    List deployment = ds['deployments'];
+
+                                    return ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemCount: deployment.length,
+                                      itemBuilder: (context, stationIndex) {
+                                        return GestureDetector(
+                                          onTap: () {
+                                            print(deployment[stationIndex]);
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return DeleteDeployment(
+                                                  deployment:
+                                                      deployment[stationIndex],
+                                                );
+                                              },
+                                            );
+                                          },
+                                          child: Card(
+                                            color: MyColors().biceBlue,
+                                            child: ListTile(
+                                              title: Text(
+                                                deployment[stationIndex],
+                                                style: TextStyle(
+                                                    color: MyColors()
+                                                        .secondaryColor),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              Text('Stations',
+                                  style: TextStyle(
+                                      color: MyColors().secondaryColor,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: snapshot.data!.docs.length,
+                                  itemBuilder: (context, index) {
+                                    DocumentSnapshot ds =
+                                        snapshot.data!.docs[index];
+                                    List stations = ds['stations'];
+
+                                    return ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemCount: stations.length,
+                                      itemBuilder: (context, stationIndex) {
+                                        return GestureDetector(
+                                          onTap: () {
+                                            print(stations[stationIndex]);
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return DeleteStation(
+                                                  station:
+                                                      stations[stationIndex],
+                                                );
+                                              },
+                                            );
+                                          },
+                                          child: Card(
+                                            color: MyColors().biceBlue,
+                                            child: ListTile(
+                                              title: Text(
+                                                stations[stationIndex],
+                                                style: TextStyle(
+                                                    color: MyColors()
+                                                        .secondaryColor),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
-              }
-
-              return Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Text('Deployments',
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold)),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: snapshot.data!.docs.length,
-                                itemBuilder: (context, index) {
-                                  DocumentSnapshot ds =
-                                      snapshot.data!.docs[index];
-                                  List deployment = ds['deployments'];
-
-                                  return ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemCount: deployment.length,
-                                    itemBuilder: (context, stationIndex) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          print(deployment[stationIndex]);
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return DeleteDeployment(
-                                                deployment:
-                                                    deployment[stationIndex],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        child: Card(
-                                          color: MyColors().primaryColor,
-                                          child: ListTile(
-                                            title:
-                                                Text(deployment[stationIndex]),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Text('Stations',
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold)),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: snapshot.data!.docs.length,
-                                itemBuilder: (context, index) {
-                                  DocumentSnapshot ds =
-                                      snapshot.data!.docs[index];
-                                  List stations = ds['stations'];
-
-                                  return ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemCount: stations.length,
-                                    itemBuilder: (context, stationIndex) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          print(stations[stationIndex]);
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return DeleteStation(
-                                                station: stations[stationIndex],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        child: Card(
-                                          color: MyColors().primaryColor,
-                                          child: ListTile(
-                                            title: Text(stations[stationIndex]),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

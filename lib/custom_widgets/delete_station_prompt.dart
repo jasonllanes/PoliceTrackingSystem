@@ -41,10 +41,20 @@ class _DeleteStationState extends State<DeleteStation> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Delete Station"),
+      title: const Text(
+        "Delete Station",
+        style: TextStyle(
+          color: Colors.white,
+        ),
+      ),
       content: _isLoading
           ? CircularProgressIndicator()
-          : Text("Are you sure you want to delete this station?"),
+          : Text(
+              "Are you sure you want to delete this station?",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
       actions: [
         TextButton(
           onPressed: () {
